@@ -3,14 +3,15 @@ using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
 public class Alarm : MonoBehaviour
-{
-    [SerializeField] private float _alarmVolume;  
+{   
     [SerializeField] private float _maxVolume;
     [SerializeField] private float _changeVolume;
     [SerializeField] private int _stepVolume;
 
+    private float _volume;
+
     private AudioSource _audioSource;
-    private Coroutine _alarmWork;   
+    private Coroutine _alarmWork;
 
     private void Awake()
     {
@@ -30,7 +31,7 @@ public class Alarm : MonoBehaviour
         if (other.TryGetComponent(out Enemy enemy))
         {
             StopCoroutine(_alarmWork);
-            _audioSource.Stop();
+            StartCoroutine(DecreaseSound());
         }
     }
 
@@ -42,30 +43,30 @@ public class Alarm : MonoBehaviour
 
             yield return new WaitForSeconds(0.5f);
 
-            _alarmVolume = Mathf.MoveTowards(_alarmVolume, _maxVolume, _changeVolume * Time.deltaTime);
+            _volume = Mathf.MoveTowards(_volume, _maxVolume, _changeVolume * Time.deltaTime);
+        }
+    }
 
-            if (_alarmVolume >= _maxVolume)
-            {
-                for (int j = 0; j < _stepVolume; j++)
-                {
-                    ReduceSignal();
+    private IEnumerator DecreaseSound()
+    {
+        for (int j = 0; j < _stepVolume; j++)
+        {
+            ReduceSignal();
 
-                    yield return new WaitForSeconds(0.5f);
-                }
-            }
+            yield return new WaitForSeconds(0.5f);
+
+            _volume = Mathf.MoveTowards(_volume, _maxVolume, -_changeVolume * Time.deltaTime);
         }
     }
 
     private void StartSignal()
-    {       
-        _audioSource.volume = _alarmVolume;
-        _audioSource.Play();     
+    {
+        _audioSource.volume = _volume;
+        _audioSource.Play();
     }
 
     private void ReduceSignal()
     {
-        _alarmVolume = Mathf.MoveTowards(_alarmVolume, _maxVolume, -_changeVolume * Time.deltaTime);
-        _audioSource.volume = _alarmVolume;
-        _audioSource.Play();
+        _audioSource.volume = _volume;
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
 public class Alarm : MonoBehaviour
-{   
+{
     [SerializeField] private float _maxVolume;
     [SerializeField] private float _changeVolume;
     [SerializeField] private int _stepVolume;
@@ -28,11 +28,8 @@ public class Alarm : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.TryGetComponent(out Enemy enemy))
-        {
-            StopCoroutine(_alarmWork);
-            _alarmReduce = StartCoroutine(DecreaseSound());
-        }
+        StopCoroutine(_alarmWork);
+        _alarmReduce = StartCoroutine(DecreaseSound());
     }
 
     private IEnumerator ActivatingAlarm()

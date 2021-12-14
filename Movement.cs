@@ -16,5 +16,4 @@ public class Movement : MonoBehaviour
             transform.Translate(_speed * Time.deltaTime * -1, 0, 0);
         }
     }
-
 }

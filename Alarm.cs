@@ -8,10 +8,9 @@ public class Alarm : MonoBehaviour
     [SerializeField] private float _changeVolume;
     [SerializeField] private int _stepVolume;
 
-    private float _volume;
-
     private AudioSource _audioSource;
     private Coroutine _alarmWork;
+    private Coroutine _alarmReduce;
 
     private void Awake()
     {
@@ -22,6 +21,7 @@ public class Alarm : MonoBehaviour
     {
         if (other.TryGetComponent(out Enemy enemy))
         {
+            StopCoroutine(DecreaseSound());
             _alarmWork = StartCoroutine(ActivatingAlarm());
         }
     }
@@ -31,7 +31,7 @@ public class Alarm : MonoBehaviour
         if (other.TryGetComponent(out Enemy enemy))
         {
             StopCoroutine(_alarmWork);
-            StartCoroutine(DecreaseSound());
+            _alarmReduce = StartCoroutine(DecreaseSound());
         }
     }
 
@@ -39,11 +39,11 @@ public class Alarm : MonoBehaviour
     {
         for (int i = 0; i < int.MaxValue; i++)
         {
-            StartSignal();
+            _audioSource.Play();
 
             yield return new WaitForSeconds(0.5f);
 
-            _volume = Mathf.MoveTowards(_volume, _maxVolume, _changeVolume * Time.deltaTime);
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, _maxVolume, _changeVolume * Time.deltaTime);
         }
     }
 
@@ -51,22 +51,9 @@ public class Alarm : MonoBehaviour
     {
         for (int j = 0; j < _stepVolume; j++)
         {
-            ReduceSignal();
-
             yield return new WaitForSeconds(0.5f);
 
-            _volume = Mathf.MoveTowards(_volume, _maxVolume, -_changeVolume * Time.deltaTime);
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, _maxVolume, -_changeVolume * Time.deltaTime);
         }
-    }
-
-    private void StartSignal()
-    {
-        _audioSource.volume = _volume;
-        _audioSource.Play();
-    }
-
-    private void ReduceSignal()
-    {
-        _audioSource.volume = _volume;
     }
 }

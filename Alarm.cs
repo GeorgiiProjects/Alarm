@@ -21,7 +21,10 @@ public class Alarm : MonoBehaviour
     {
         if (other.TryGetComponent(out Enemy enemy))
         {
-            StopCoroutine(DecreaseSound());
+            if (_alarmReduce != null)
+            {
+                StopCoroutine(_alarmReduce);
+            }
             _alarmWork = StartCoroutine(ActivatingAlarm());
         }
     }

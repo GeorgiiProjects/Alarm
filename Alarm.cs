@@ -4,13 +4,14 @@ using UnityEngine;
 [RequireComponent(typeof(AudioSource))]
 public class Alarm : MonoBehaviour
 {
-    [SerializeField] private float _maxVolume;
+    [SerializeField] private float _currentVolume;
     [SerializeField] private float _changeVolume;
     [SerializeField] private int _stepVolume;
 
+    private bool _inApartments;
+
     private AudioSource _audioSource;
     private Coroutine _alarmWork;
-    private Coroutine _alarmReduce;
 
     private void Awake()
     {
@@ -21,39 +22,41 @@ public class Alarm : MonoBehaviour
     {
         if (other.TryGetComponent(out Enemy enemy))
         {
-            if (_alarmReduce != null)
+            if (_alarmWork != null)
             {
-                StopCoroutine(_alarmReduce);
+                StopCoroutine(_alarmWork);
             }
-            _alarmWork = StartCoroutine(ActivatingAlarm());
+            _inApartments = true;
+            _alarmWork = StartCoroutine(RunSignal());
         }
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
         StopCoroutine(_alarmWork);
-        _alarmReduce = StartCoroutine(DecreaseSound());
+        _inApartments = false;
+        _alarmWork = StartCoroutine(RunSignal());
     }
 
-    private IEnumerator ActivatingAlarm()
+    private IEnumerator RunSignal()
     {
-        for (int i = 0; i < int.MaxValue; i++)
+        if (_inApartments)
         {
             _audioSource.Play();
-
-            yield return new WaitForSeconds(0.5f);
-
-            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, _maxVolume, _changeVolume * Time.deltaTime);
+            _currentVolume = 1;
         }
-    }
-
-    private IEnumerator DecreaseSound()
-    {
-        for (int j = 0; j < _stepVolume; j++)
+        else
         {
-            yield return new WaitForSeconds(0.5f);
+            _currentVolume = 0;
+        }
 
-            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, _maxVolume, -_changeVolume * Time.deltaTime);
+        var waitForSeconds = new WaitForSeconds(0.5f);      
+
+        for (int i = 0; i < _stepVolume; i++)
+        {
+            yield return waitForSeconds;
+
+            _audioSource.volume = Mathf.MoveTowards(_audioSource.volume, _currentVolume, _changeVolume * Time.deltaTime);
         }
     }
 }
